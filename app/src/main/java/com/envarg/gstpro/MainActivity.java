@@ -8,6 +8,7 @@ import android.util.Base64;
 import android.widget.Toast;
 import androidx.core.content.FileProvider;
 import java.io.*;
+// ENVARG GST PRO V27: loads live web app including duplicate bill detection.
 public class MainActivity extends Activity {
  WebView web; ValueCallback<Uri[]> fileCallback; byte[] pendingPdf; String pendingName; String pendingMime;
  static final int PICK_FILE=1001, SAVE_PDF=1002;
