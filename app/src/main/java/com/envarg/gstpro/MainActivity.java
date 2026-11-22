@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
  @JavascriptInterface public void saveFile(String base64,String filename,String mime){
   try{byte[] bytes=Base64.decode(base64,Base64.DEFAULT);if(bytes.length>20*1024*1024)throw new Exception("File too large");
    String name=filename.replaceAll("[^a-zA-Z0-9_.-]","_");
-   String safeMime="application/json".equals(mime)?"application/json":"application/octet-stream";
+   String safeMime="application/json".equals(mime)?"application/json":("text/csv".equals(mime)?"text/csv":"application/octet-stream");
    runOnUiThread(()->saveDocument(bytes,name,safeMime));
   }catch(Exception e){runOnUiThread(()->Toast.makeText(MainActivity.this,"Backup error: "+e.getMessage(),Toast.LENGTH_LONG).show());}
  }
