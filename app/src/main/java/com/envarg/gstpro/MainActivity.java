@@ -9,13 +9,20 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 import java.io.*;
 public class MainActivity extends Activity {
- WebView web; ValueCallback<Uri[]> fileCallback; byte[] pendingPdf; String pendingName;
+ WebView web; ValueCallback<Uri[]> fileCallback; byte[] pendingPdf; String pendingName; String pendingMime;
  static final int PICK_FILE=1001, SAVE_PDF=1002;
  @Override public void onCreate(Bundle b){super.onCreate(b);
  web=new WebView(this);setContentView(web);
  WebSettings s=web.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setAllowFileAccess(false);s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
  web.setWebViewClient(new WebViewClient());
  web.addJavascriptInterface(new Object(){
+ @JavascriptInterface public void saveFile(String base64,String filename,String mime){
+  try{byte[] bytes=Base64.decode(base64,Base64.DEFAULT);if(bytes.length>20*1024*1024)throw new Exception("File too large");
+   String name=filename.replaceAll("[^a-zA-Z0-9_.-]","_");
+   String safeMime="application/json".equals(mime)?"application/json":"application/octet-stream";
+   runOnUiThread(()->saveDocument(bytes,name,safeMime));
+  }catch(Exception e){runOnUiThread(()->Toast.makeText(MainActivity.this,"Backup error: "+e.getMessage(),Toast.LENGTH_LONG).show());}
+ }
  @JavascriptInterface public void pdf(String base64,String filename,boolean share){
   try{
    byte[] data=Base64.decode(base64,Base64.DEFAULT);
@@ -34,9 +41,10 @@ public class MainActivity extends Activity {
  }});
  web.loadUrl("https://envarg-gst-pro.hatchable.site");
  }
- void savePdf(byte[] bytes,String name){
- try{pendingPdf=bytes;pendingName=name;Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
- intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("application/pdf");intent.putExtra(Intent.EXTRA_TITLE,name);startActivityForResult(intent,SAVE_PDF);
+ void savePdf(byte[] bytes,String name){saveDocument(bytes,name,"application/pdf");}
+ void saveDocument(byte[] bytes,String name,String mime){
+ try{pendingPdf=bytes;pendingName=name;pendingMime=mime;Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+ intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType(mime);intent.putExtra(Intent.EXTRA_TITLE,name);startActivityForResult(intent,SAVE_PDF);
  }catch(Exception e){Toast.makeText(this,"Cannot open PDF save: "+e.getMessage(),Toast.LENGTH_LONG).show();}
  }
  void sharePdf(byte[] bytes,String name){
@@ -54,7 +62,7 @@ public class MainActivity extends Activity {
  if(request==SAVE_PDF){if(result==RESULT_OK&&data!=null&&pendingPdf!=null){
  try(OutputStream out=getContentResolver().openOutputStream(data.getData())){out.write(pendingPdf);Toast.makeText(this,"PDF saved",Toast.LENGTH_SHORT).show();}
  catch(Exception e){Toast.makeText(this,"PDF save failed: "+e.getMessage(),Toast.LENGTH_LONG).show();}
- }pendingPdf=null;pendingName=null;}
+ }pendingPdf=null;pendingName=null;pendingMime=null;}
  }
  @Override public void onBackPressed(){if(web.canGoBack())web.goBack();else super.onBackPressed();}
 }
