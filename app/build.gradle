@@ -1,4 +1,4 @@
 plugins { id 'com.android.application' }
-android { namespace 'com.envarg.gstpro'; compileSdk 35; defaultConfig { applicationId 'com.envarg.gstpro'; minSdk 24; targetSdk 35; versionCode 24; versionName '24.0' } }
+android { namespace 'com.envarg.gstpro'; compileSdk 35; defaultConfig { applicationId 'com.envarg.gstpro'; minSdk 24; targetSdk 35; versionCode 29; versionName "29.0" } }
 
 dependencies { implementation 'androidx.core:core:1.15.0' }
